@@ -1,0 +1,5 @@
+ydb-short-name = YDB
+ydb-cli = CLI
+ydb-install-url = https://download
+ydb-current-version = 44.02
+ydb-stable-version = 44
