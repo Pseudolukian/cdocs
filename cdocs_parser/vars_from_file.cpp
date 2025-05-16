@@ -1,6 +1,6 @@
 #include "class.hpp"
 
-map<string, Value> CDOCS_parser::vars_from_txt() {
+map<string, Value> CDOCS_parser::vars_from_file(std::vector<std::string> vars_list_) {
         map<string, Value> result;
 
         for (string var:vars_list_) {

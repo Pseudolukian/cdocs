@@ -14,7 +14,7 @@ set(SOURCES
     cdocs_files/read_file.cpp
     cdocs_files/save_file.cpp
     cdocs_parser/constructor.cpp
-    cdocs_parser/vars_from_txt.cpp
+    cdocs_parser/vars_from_file.cpp
     cdocs_parser/vars_in_docs.cpp
 )
 
@@ -33,4 +33,12 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         ${CMAKE_SOURCE_DIR}/vars.txt
         ${CMAKE_BINARY_DIR}/vars.txt
     COMMENT "Copying vars.txt to build directory"
+)
+
+# Копируем cdocs.cfg в директорию сборки
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_SOURCE_DIR}/cdocs.cfg
+        ${CMAKE_BINARY_DIR}/cdocs.cfg
+    COMMENT "Copying cdocs.cfg to build directory"
 )
