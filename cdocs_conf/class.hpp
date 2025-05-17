@@ -9,3 +9,10 @@ class CDOCS_conf {
         std::vector<std::string> read_conf(const std::string& filename) {return CDOCS_files::read_file(filename);}
         map<string, Value> vars_from_conf(std::vector<std::string> vars_list_) {return CDOCS_parser::vars_from_file(vars_list_);}
 };
+
+
+auto variantToString = [](const auto& value) -> string {
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+};
