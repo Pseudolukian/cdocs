@@ -6,22 +6,20 @@ using namespace std;
 
 vector<string> CDOCS_parser::vars_in_docs(vector<string>& file_lines, map<string, Value>& vars_list) {
     vector<string> result;
-    const regex var_pattern(R"(\s*\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}\s*)");
+    const regex var_pattern(R"(\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\})");
 
     for (const string& line : file_lines) {
         string processed_line = line;
-        //cout << "Processing line: " << processed_line << endl;
-
-        // Use regex_iterator to find all matches
         sregex_iterator it(processed_line.begin(), processed_line.end(), var_pattern);
         sregex_iterator end;
 
         // Store replacements to apply after iteration
-        vector<pair<size_t, pair<size_t, string>>> replacements;
+        vector<pair<size_t, size_t>> positions;
+        vector<string> replacements;
 
         for (; it != end; ++it) {
             string var_name = it->str(1);
-            //cout << "Found variable: " << var_name << endl;
+            string full_match = it->str(0);
 
             auto var_it = vars_list.find(var_name);
             if (var_it != vars_list.end()) {
@@ -34,14 +32,15 @@ vector<string> CDOCS_parser::vars_in_docs(vector<string>& file_lines, map<string
                     }
                 }, var_it->second);
 
-                // Store position, length, and replacement value
-                replacements.emplace_back(it->position(0), make_pair(it->length(0), value));
+                positions.emplace_back(it->position(0), full_match.length());
+                replacements.push_back(value);
             }
         }
 
         // Apply replacements in reverse order to avoid offset issues
-        for (auto rit = replacements.rbegin(); rit != replacements.rend(); ++rit) {
-            processed_line.replace(rit->first, rit->second.first, rit->second.second);
+        for (int i = replacements.size() - 1; i >= 0; --i) {
+            const auto& pos = positions[i];
+            processed_line.replace(pos.first, pos.second, replacements[i]);
         }
 
         result.push_back(processed_line);
