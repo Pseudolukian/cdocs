@@ -7,16 +7,17 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Добавляем исходные файлы из папок
-set(SOURCES
+file(GLOB SOURCES
     main.cpp
-    cdocs_files/constructor.cpp
-    cdocs_files/get_files_list.cpp
-    cdocs_files/read_file.cpp
-    cdocs_files/save_file.cpp
-    cdocs_parser/constructor.cpp
-    cdocs_parser/vars_from_file.cpp
-    cdocs_parser/vars_in_docs.cpp
+    cdocs_files/*.cpp
+    cdocs_parser/*.cpp
 )
+
+file(GLOB NOBUILD_FILES 
+    "cdocs_files/*_nobuild.cpp" 
+    "cdocs_parser/*_nobuild.cpp"
+)
+list(REMOVE_ITEM SOURCES ${NOBUILD_FILES})
 
 # Создаем исполняемый файл
 add_executable(${PROJECT_NAME} ${SOURCES})

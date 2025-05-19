@@ -6,7 +6,7 @@ using namespace std;
 
 vector<string> CDOCS_parser::vars_in_docs(vector<string>& file_lines, map<string, Value>& vars_list) {
     vector<string> result;
-    const regex var_pattern(R"(\{\{\s*([a-zA-Z0-9-]+)\s*\}\})");
+    const regex var_pattern(R"(\s*\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}\s*)");
 
     for (const string& line : file_lines) {
         string processed_line = line;

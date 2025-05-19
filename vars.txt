@@ -1,4 +1,10 @@
 [String]
+pub-cover-size: 700x400
+azure_docs: https://learn.microsoft.com/ru-ru
+yandex_docs = https://cloud.yandex/ru/docs
+quickstart-path: ../../../../quickstart.md
+link-console-main = true
+audience = public
 lang = ru
 ydb-short-name = YDB
 ydb-cli = CLI
@@ -63,3 +69,4 @@ ydb-airflow = false
 ydb-finebi = false
 ydb-superset = false
 ydb-datalens = false
+sign_plus = <?xml version="1.0" encoding="UTF-8"?><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="11" y="5" width="2" height="14" rx="1" fill="#4caf50"/><rect x="5" y="11" width="14" height="2" rx="1" fill="#4caf50"/></svg>
