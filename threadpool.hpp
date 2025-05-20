@@ -3,64 +3,74 @@
 
 #include <vector>
 #include <thread>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
 #include <functional>
-#include <algorithm>
+#include <atomic>
 
 class ThreadPool {
 private:
     std::vector<std::thread> workers;
+    std::queue<std::function<void()>> tasks;
+    std::mutex queue_mutex;
+    std::condition_variable condition;
+    std::atomic<bool> stop;
+    std::atomic<size_t> active_tasks;
 
 public:
-    ThreadPool() = default;
+    ThreadPool(size_t threads = 0) : stop(false), active_tasks(0) {
+        if (threads == 0) {
+            threads = std::max(1u, std::thread::hardware_concurrency());
+        }
 
-    // Execute tasks across multiple threads
-    template<typename Func>
-    void execute(const std::vector<std::string>& files, Func task) {
-        // Get number of available CPU cores
-        unsigned int num_cores = std::max(1u, std::thread::hardware_concurrency());
-        
-        // Calculate base number of files per thread and remainder
-        size_t files_count = files.size();
-        size_t files_per_thread = files_count / num_cores;
-        size_t remainder = files_count % num_cores;
-
-        // Clear any existing workers
-        workers.clear();
-
-        size_t start_idx = 0;
-        for (unsigned int i = 0; i < num_cores && start_idx < files_count; ++i) {
-            // Calculate number of files for this thread
-            size_t current_files = files_per_thread;
-            if (i == 0) {
-                current_files += remainder; // Add remainder to first thread
-            }
-
-            // Create sub-range for this thread
-            size_t end_idx = std::min(start_idx + current_files, files_count);
-            
-            // Create thread for this batch of files
-            workers.emplace_back([start_idx, end_idx, &files, &task]() {
-                for (size_t j = start_idx; j < end_idx; ++j) {
-                    task(files[j]);
+        for (size_t i = 0; i < threads; ++i) {
+            workers.emplace_back([this] {
+                while (true) {
+                    std::function<void()> task;
+                    {
+                        std::unique_lock<std::mutex> lock(this->queue_mutex);
+                        this->condition.wait(lock,
+                            [this] { return this->stop || !this->tasks.empty(); });
+                        if (this->stop && this->tasks.empty())
+                            return;
+                        task = std::move(this->tasks.front());
+                        this->tasks.pop();
+                    }
+                    ++active_tasks;
+                    task();
+                    --active_tasks;
+                    condition.notify_one(); // Notify after task completion
                 }
             });
-
-            start_idx = end_idx;
         }
     }
 
-    // Wait for all threads to complete
+    template<class F>
+    void enqueue(F&& f) {
+        {
+            std::unique_lock<std::mutex> lock(queue_mutex);
+            tasks.emplace(std::forward<F>(f));
+        }
+        condition.notify_one();
+    }
+
     void wait() {
-        for (auto& worker : workers) {
+        std::unique_lock<std::mutex> lock(queue_mutex);
+        condition.wait(lock, [this] { return tasks.empty() && active_tasks == 0; });
+    }
+
+    ~ThreadPool() {
+        {
+            std::unique_lock<std::mutex> lock(queue_mutex);
+            stop = true;
+        }
+        condition.notify_all();
+        for (std::thread& worker : workers) {
             if (worker.joinable()) {
                 worker.join();
             }
         }
-        workers.clear();
-    }
-
-    ~ThreadPool() {
-        wait();
     }
 };
 
