@@ -1,64 +1,90 @@
 #include "class.hpp"
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <variant>
-#include <regex>
-#include <vector>
-#include <map>
-#include <algorithm>
-#include "../cdocs_files/class.hpp"
 
 using namespace std;
 using Value = variant<string, unsigned, double>;
 
 
 vector<string> CDOCS_parser::block_include(vector<string>& blocks, const map<string, Value>& vars_list, string file_name, int depth) {
-    // Защита от слишком глубокой рекурсии
     const int MAX_RECURSION_DEPTH = 10;
     if (depth > MAX_RECURSION_DEPTH) {
         cerr << "Maximum include recursion depth reached (" << MAX_RECURSION_DEPTH << ")" << endl;
         return blocks;
     }
 
-    // Регулярные выражения для поиска директив
-    regex include_pattern(R"(\s*@include\s*)");
-    regex include_body_pattern(R"(\s*\((?:\.{0,2}/)?[^)]+\.md\))");
-    regex block_if_pattern(R"(\s*@if\s*)");
+    // Регулярные выражения
+    regex include_regex(R"(\s*@include\s*(notitle\s*)?\(\s*([^)#]+)(?:#([^)]+))?\s*\))");
+    regex header_regex(R"(^\s*#{1,3}\s+.+\{\s*#\s*([^}]+)\s*\})");
+    regex empty_line_regex(R"(^\s*$)");
     
     vector<string> result_blocks;
     
     for (const auto& block : blocks) {
-        // Проверка на @include
-        if (regex_search(block, include_pattern)) {
-            smatch match;
-            if (regex_search(block, match, include_body_pattern)) {
-                // Извлекаем путь из скобок
-                string path = match.str();
-                path = path.substr(path.find('(') + 1);
-                path = path.substr(0, path.find(')'));
-                
-                // Удаляем возможные пробелы
-                path.erase(0, path.find_first_not_of(" \t"));
-                path.erase(path.find_last_not_of(" \t") + 1);
-                
-                // Формируем абсолютный путь
-                string final_include_path = resolve_include_path(path, file_name);
-                
-                // Читаем содержимое файла
-                vector<string> included_blocks = CDOCS_files::read_file(final_include_path);
-                
-                // Рекурсивно обрабатываем вложенные инклюды
-                included_blocks = block_include(included_blocks, vars_list, final_include_path, depth + 1);
-                
-                // Добавляем обработанное содержимое в результат
-                result_blocks.insert(result_blocks.end(), included_blocks.begin(), included_blocks.end());
-                
-                continue; // Пропускаем добавление оригинального блока с @include
+        smatch match;
+        if (regex_search(block, match, include_regex) && match.size() > 2) {
+            bool no_title = match[1].matched;
+            string path = match[2].str();
+            string anchor = match.size() > 3 ? match[3].str() : "";
+            
+            // Удаляем пробелы
+            path.erase(0, path.find_first_not_of(" \t"));
+            path.erase(path.find_last_not_of(" \t") + 1);
+            if (!anchor.empty()) {
+                anchor.erase(0, anchor.find_first_not_of(" \t"));
+                anchor.erase(anchor.find_last_not_of(" \t") + 1);
             }
+            
+            string final_path = resolve_include_path(path, file_name);
+            
+            try {
+                vector<string> included_blocks = CDOCS_files::read_file(final_path);
+                vector<string> filtered_blocks;
+                
+                if (no_title) {
+                    bool found_anchor = anchor.empty();
+                    bool content_started = false;
+                    
+                    for (const auto& line : included_blocks) {
+                        smatch header_match;
+                        if (regex_search(line, header_match, header_regex)) {
+                            string current_anchor = header_match[1].str();
+                            current_anchor.erase(0, current_anchor.find_first_not_of(" \t"));
+                            current_anchor.erase(current_anchor.find_last_not_of(" \t") + 1);
+                            
+                            if (found_anchor) {
+                                // Если нашли следующий заголовок после нужного якоря
+                                break;
+                            }
+                            
+                            if (anchor.empty() || current_anchor == anchor) {
+                                found_anchor = true;
+                                continue; // Пропускаем заголовок
+                            }
+                        } else if (found_anchor) {
+                            // Пропускаем пустые строки в начале
+                            if (!content_started && regex_search(line, empty_line_regex)) {
+                                continue;
+                            }
+                            content_started = true;
+                            filtered_blocks.push_back(line);
+                        }
+                    }
+                } else {
+                    filtered_blocks = included_blocks;
+                }
+                
+                // Рекурсивная обработка
+                filtered_blocks = block_include(filtered_blocks, vars_list, final_path, depth + 1);
+                result_blocks.insert(result_blocks.end(), filtered_blocks.begin(), filtered_blocks.end());
+                
+            } catch (const exception& e) {
+                cerr << "Error processing include '" << path << (anchor.empty() ? "" : "#" + anchor) 
+                     << "': " << e.what() << endl;
+                result_blocks.push_back(block);
+            }
+            
+            continue;
         }
         
-        // Добавляем оригинальный блок, если это не @include
         result_blocks.push_back(block);
     }
     

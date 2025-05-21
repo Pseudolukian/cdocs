@@ -1,6 +1,4 @@
 #include "class.hpp"
-#include <iostream>
-#include <regex>
 
 using namespace std;
 

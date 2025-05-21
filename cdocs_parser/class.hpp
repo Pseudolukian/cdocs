@@ -8,7 +8,8 @@
 #include <fstream>
 #include <algorithm>
 #include <regex>
-
+#include <iostream>
+#include "../cdocs_files/class.hpp"
 
 using namespace std;
 using Value = variant<string, unsigned, double>;
