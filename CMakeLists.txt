@@ -11,6 +11,7 @@ file(GLOB SOURCES
     main.cpp
     cdocs_files/*.cpp
     cdocs_parser/*.cpp
+    cdocs_conf/*.cpp
 )
 
 file(GLOB NOBUILD_FILES 

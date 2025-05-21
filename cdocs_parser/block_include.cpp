@@ -13,7 +13,7 @@ using namespace std;
 using Value = variant<string, unsigned, double>;
 
 
-vector<string> CDOCS_parser::block_parser(vector<string>& blocks, const map<string, Value>& vars_list, string file_name, int depth) {
+vector<string> CDOCS_parser::block_include(vector<string>& blocks, const map<string, Value>& vars_list, string file_name, int depth) {
     // Защита от слишком глубокой рекурсии
     const int MAX_RECURSION_DEPTH = 10;
     if (depth > MAX_RECURSION_DEPTH) {
@@ -49,18 +49,13 @@ vector<string> CDOCS_parser::block_parser(vector<string>& blocks, const map<stri
                 vector<string> included_blocks = CDOCS_files::read_file(final_include_path);
                 
                 // Рекурсивно обрабатываем вложенные инклюды
-                included_blocks = block_parser(included_blocks, vars_list, final_include_path, depth + 1);
+                included_blocks = block_include(included_blocks, vars_list, final_include_path, depth + 1);
                 
                 // Добавляем обработанное содержимое в результат
                 result_blocks.insert(result_blocks.end(), included_blocks.begin(), included_blocks.end());
                 
                 continue; // Пропускаем добавление оригинального блока с @include
             }
-        }
-        
-        // Проверка на @if (пока просто пропускаем)
-        if (regex_search(block, block_if_pattern)) {
-            // Будущая обработка условий
         }
         
         // Добавляем оригинальный блок, если это не @include
