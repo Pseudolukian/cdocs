@@ -4,7 +4,7 @@ using namespace std;
 using Value = variant<string, unsigned, double>;
 
 
-vector<string> CDOCS_parser::block_include(vector<string>& blocks, const map<string, Value>& vars_list, string file_name, int depth) {
+vector<string> CDOCS_parser::block_include(vector<string>& blocks, string file_name, int depth) {
     const int MAX_RECURSION_DEPTH = 10;
     if (depth > MAX_RECURSION_DEPTH) {
         cerr << "Maximum include recursion depth reached (" << MAX_RECURSION_DEPTH << ")" << endl;
@@ -73,7 +73,7 @@ vector<string> CDOCS_parser::block_include(vector<string>& blocks, const map<str
                 }
                 
                 // Рекурсивная обработка
-                filtered_blocks = block_include(filtered_blocks, vars_list, final_path, depth + 1);
+                filtered_blocks = block_include(filtered_blocks, final_path, depth + 1);
                 result_blocks.insert(result_blocks.end(), filtered_blocks.begin(), filtered_blocks.end());
                 
             } catch (const exception& e) {

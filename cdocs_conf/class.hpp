@@ -1,8 +1,5 @@
 // class.hpp
 #pragma once
-#include <vector>
-#include <string>
-#include <map>
 #include <variant>
 #include <sstream>
 #include "../cdocs_files/class.hpp"
