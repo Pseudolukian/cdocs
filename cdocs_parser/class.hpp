@@ -26,6 +26,8 @@ public:
     vector<string> vars_in_docs(vector<string>& file_lines, const map<string, Value>& vars_list);
     vector<string> inline_if(vector<string>& file_lines);
     bool if_cond_parser(const string& condition);
+    vector<string> no_title(vector<string>& blocks);
+    vector<string> from_anchor(vector<string>& blocks, string& anchor)
     
 private:
     std::vector<std::string> vars_list_;
