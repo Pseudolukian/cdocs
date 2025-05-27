@@ -11,6 +11,8 @@
 #include <algorithm>
 #include <regex>
 #include <iostream>
+#include <array>
+#include <set>
 #include "../cdocs_files/class.hpp"
 
 using namespace std;

@@ -1,61 +1,46 @@
 #include "class.hpp"
 
 std::vector<std::string> CDOCS_parser::block_if(std::vector<std::string>& lines) {
-    std::vector<std::string> result;
     std::regex if_regex(R"(@if\s*\(\s*([^)]+)\s*\))");
     std::regex endif_regex(R"(@endif)");
     std::smatch match;
+    std::vector<int> break_points;
+    std::vector<bool> condition_stack = {true}; // Стек для условий
 
-    bool inside_if_block = false;
-    bool condition_met = false;
-    std::vector<std::string> temp_block; // Временное хранилище для контента внутри @if ... @endif
+    int line_pos = 0;
+    for (const std::string& line : lines) {
+        bool current_condition = condition_stack.back();
 
-    for (const auto& line : lines) {
-        if (std::regex_search(line, match, if_regex)) {
-            if (inside_if_block) {
-                // Вложенные @if не поддерживаются (можно добавить стек для поддержки)
-                std::cerr << "Error: Nested @if blocks are not supported!" << std::endl;
-                return lines; // Возвращаем исходный текст в случае ошибки
+        if (!current_condition) {
+            break_points.push_back(line_pos);
+        }
+
+        if (line.size() > 10 && line.size() < 50) {
+            if (std::regex_search(line, match, if_regex)) {
+                std::string condition = match[1].str();
+                bool condition_met = CDOCS_parser::if_cond_parser(condition);
+                condition_stack.push_back(current_condition && condition_met);
+                break_points.push_back(line_pos); // Удаляем строку с @if
             }
-
-            inside_if_block = true;
-            std::string condition = match[1].str();
-            condition_met = CDOCS_parser::if_cond_parser(condition);
-
-            // Пропускаем строку с @if (не добавляем в результат)
-            continue;
-        }
-        else if (std::regex_search(line, endif_regex)) {
-            if (!inside_if_block) {
-                std::cerr << "Error: @endif without matching @if!" << std::endl;
-                return lines; // Возвращаем исходный текст в случае ошибки
+        } else if (line.size() < 10) {
+            if (std::regex_search(line, endif_regex)) {
+                condition_stack.pop_back(); // Завершаем текущий блок
+                break_points.push_back(line_pos); // Удаляем строку с @endif
             }
-
-            inside_if_block = false;
-
-            // Если условие true — добавляем контент блока в результат
-            if (condition_met) {
-                result.insert(result.end(), temp_block.begin(), temp_block.end());
-            }
-
-            temp_block.clear(); // Очищаем временный блок
-            continue; // Пропускаем строку с @endif
         }
 
-        // Если мы внутри блока @if — сохраняем строку во временный блок
-        if (inside_if_block) {
-            temp_block.push_back(line);
-        }
-        else {
-            // Иначе — добавляем строку в результат
-            result.push_back(line);
-        }
+        line_pos++;
     }
 
-    // Если остался незакрытый блок @if — возвращаем исходный текст
-    if (inside_if_block) {
-        std::cerr << "Error: Unclosed @if block!" << std::endl;
-        return lines;
+    // Преобразуем break_points в set для быстрого поиска
+    std::set<int> break_points_set(break_points.begin(), break_points.end());
+    std::vector<std::string> result;
+
+    // Проходим по индексам lines и добавляем только те строки, которых нет в break_points
+    for (size_t i = 0; i < lines.size(); ++i) {
+        if (break_points_set.find(i) == break_points_set.end()) {
+            result.push_back(std::move(lines[i]));
+        }
     }
 
     return result;
