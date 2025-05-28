@@ -11,63 +11,64 @@ vector<string> CDOCS_parser::block_include(vector<string> blocks, const string& 
 
     // 1. Находим все @include директивы
     vector<string> out;
-    vector<int> break_points;
-    map<size_t, string> include_stack;
     regex include_regex(R"(@include\s*\(\s*([^)]+)\s*\))");
+    regex include_no_title_regex(R"(@include\s*notitle\s*\(\s*([^)]+)\s*\))");
     smatch matches;
+
+    struct FileData {
+        fs::path path;
+        std::string anchor;
+        bool title;
+    };
+
+    std::map<size_t, FileData> includes_map;
 
     // Собираем точки включения и пути
     for (size_t i = 0; i < blocks.size(); ++i) {
         const string& block = blocks[i];
         if (block.size() > 15 && block.size() < 100) {
-            if (regex_search(block, matches, include_regex)) {
-                fs::path full_path = resolve_include_path(matches[1].str(), file_name);
-                include_stack[i] = full_path.string();
-                break_points.push_back(i);
+            if (regex_search(block, matches, include_no_title_regex)) {
+                auto result = CDOCS_parser::resolve_include_path(matches[1].str(), file_name);
+                includes_map[i] = FileData{result.first, result.second, false};
+            }
+            else if (regex_search(block, matches, include_regex)) {
+                auto result = CDOCS_parser::resolve_include_path(matches[1].str(), file_name);
+                includes_map[i] = FileData{result.first, result.second, true};
             }
         }
     }
 
-    // 2. Формируем новый вектор
-    size_t current_pos = 0;
-    for (size_t break_point : break_points) {
-        // Добавляем блоки до точки включения
-        while (current_pos < break_point) {
-            out.push_back(blocks[current_pos]);
-            ++current_pos;
+    // Собираем итоговый контент с подстановкой включений
+    size_t last_pos = 0;
+    for (const auto& [pos, file_data] : includes_map) {
+        // Добавляем блоки до текущего include
+        for (size_t i = last_pos; i < pos; ++i) {
+            out.push_back(blocks[i]);
         }
         
-        // Пропускаем сам блок с @include (current_pos == break_point)
-        ++current_pos;
+        // Добавляем содержимое включаемого файла
+        try {
+            auto included_content = CDOCS_files::read_file_ext(
+                file_data.path.string(), 
+                file_data.anchor, 
+                file_data.title
+            );
+            
+            // Рекурсивная обработка вложенных include
+            auto processed_content = block_include(included_content, file_data.path.string(), depth + 1);
+            out.insert(out.end(), processed_content.begin(), processed_content.end());
+        } catch (const std::exception& e) {
+            throw std::runtime_error("Error processing include at position " + 
+                                   std::to_string(pos) + ": " + e.what());
+        }
         
-        // Добавляем содержимое включенного файла
-        const string& include_path = include_stack[break_point];
-        vector<string> included_content = CDOCS_files::read_file(include_path);
-        included_content = block_include(std::move(included_content), include_path, depth + 1);
-        
-        // Вставляем обработанное содержимое
-        out.insert(out.end(), 
-                  make_move_iterator(included_content.begin()),
-                  make_move_iterator(included_content.end()));
+        last_pos = pos + 1; // Пропускаем сам блок include
     }
     
     // Добавляем оставшиеся блоки после последнего include
-    while (current_pos < blocks.size()) {
-        out.push_back(blocks[current_pos]);
-        ++current_pos;
+    for (size_t i = last_pos; i < blocks.size(); ++i) {
+        out.push_back(blocks[i]);
     }
 
     return out;
-}
-
-fs::path CDOCS_parser::resolve_include_path(const string& path, const string& base_file) {
-    fs::path include_path(path);
-    fs::path base_path(base_file);
-
-    if (include_path.is_absolute()) {
-        return include_path.lexically_normal();
-    }
-    
-    // Автоматическая обработка ./ и ../
-    return (base_path.parent_path() / include_path).lexically_normal();
 }
