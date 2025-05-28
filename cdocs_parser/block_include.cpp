@@ -10,33 +10,54 @@ vector<string> CDOCS_parser::block_include(vector<string> blocks, const string& 
     }
 
     // 1. Находим все @include директивы
+    vector<string> out;
+    vector<int> break_points;
     map<size_t, string> include_stack;
     regex include_regex(R"(@include\s*\(\s*([^)]+)\s*\))");
+    smatch matches;
 
+    // Собираем точки включения и пути
     for (size_t i = 0; i < blocks.size(); ++i) {
-        smatch matches;
-        if (regex_search(blocks[i], matches, include_regex)) {
-            fs::path full_path = resolve_include_path(matches[1].str(), file_name);
-            include_stack[i] = full_path.string();
+        const string& block = blocks[i];
+        if (block.size() > 15 && block.size() < 100) {
+            if (regex_search(block, matches, include_regex)) {
+                fs::path full_path = resolve_include_path(matches[1].str(), file_name);
+                include_stack[i] = full_path.string();
+                break_points.push_back(i);
+            }
         }
     }
 
-    // 2. Обрабатываем в обратном порядке
-    for (auto it = include_stack.rbegin(); it != include_stack.rend(); ++it) {
-        const auto& [index, include_path] = *it;
+    // 2. Формируем новый вектор
+    size_t current_pos = 0;
+    for (size_t break_point : break_points) {
+        // Добавляем блоки до точки включения
+        while (current_pos < break_point) {
+            out.push_back(blocks[current_pos]);
+            ++current_pos;
+        }
         
-        // Читаем файл (с рекурсивной обработкой инклудов)
+        // Пропускаем сам блок с @include (current_pos == break_point)
+        ++current_pos;
+        
+        // Добавляем содержимое включенного файла
+        const string& include_path = include_stack[break_point];
         vector<string> included_content = CDOCS_files::read_file(include_path);
         included_content = block_include(std::move(included_content), include_path, depth + 1);
-
-        // Заменяем блок
-        blocks.erase(blocks.begin() + index);
-        blocks.insert(blocks.begin() + index, 
-                    make_move_iterator(included_content.begin()),
-                    make_move_iterator(included_content.end()));
+        
+        // Вставляем обработанное содержимое
+        out.insert(out.end(), 
+                  make_move_iterator(included_content.begin()),
+                  make_move_iterator(included_content.end()));
+    }
+    
+    // Добавляем оставшиеся блоки после последнего include
+    while (current_pos < blocks.size()) {
+        out.push_back(blocks[current_pos]);
+        ++current_pos;
     }
 
-    return blocks;
+    return out;
 }
 
 fs::path CDOCS_parser::resolve_include_path(const string& path, const string& base_file) {
