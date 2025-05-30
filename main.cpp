@@ -9,10 +9,20 @@ int main() {
     // Start total execution time measurement
     auto total_start = high_resolution_clock::now();
 
+    cout << "Uploading config and vars..." << endl;
+    auto config_start = high_resolution_clock::now();
     Config conf = Config("cdocs.cfg");
     CDOCS_files files = CDOCS_files(conf.docs_root_path, conf.docs_out_path, { conf.files_extansions });
     CDOCS_parser parser = CDOCS_parser();
+    auto config_end = high_resolution_clock::now();
+    auto config_duration = duration_cast<milliseconds>(config_end - config_start);
+
+
+    cout << "Get file list...." << endl;
+    auto get_file_list_start = high_resolution_clock::now();
     vector<string> files_list = files.get_files_list();
+    auto get_file_list_end = high_resolution_clock::now();
+    auto get_file_list_duration = duration_cast<milliseconds>(get_file_list_end - get_file_list_start);
     
     // Step 1. Preprocessing vars
     cout << "Preprocessing vars..." << endl;
@@ -69,6 +79,13 @@ int main() {
 
     
     cout << "Files processed: " << files_list.size() << endl;
+
+    cout << "Time taken to load conf and vars: " 
+        << duration_cast<duration<double>>(config_duration).count() << " s" << endl;
+
+    cout << "Time taken to get file list to preproc: " 
+        << duration_cast<duration<double>>(get_file_list_duration).count() << " s" << endl;
+
     cout << "Time taken to preprocess vars: " 
         << duration_cast<duration<double>>(vars_duration).count() << " s" << endl;
     cout << "Time taken to preprocess inline if: " 

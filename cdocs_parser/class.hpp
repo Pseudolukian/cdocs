@@ -23,8 +23,8 @@ class CDOCS_parser {
 public:
     CDOCS_parser();
     // Preprocessing inline
-    static map<string, Value> vars_from_file(std::vector<std::string> vars_list_);
-    vector<string> vars_in_docs(vector<string>& file_lines, const map<string, Value>& vars_list);
+    static map<string, map<string, Value>> vars_from_file(std::vector<std::string>& vars_list);
+    vector<string> vars_in_docs(vector<string>& file_lines, const std::map<std::string, std::map<std::string, Value>>& vars_list);
     vector<string> inline_if(vector<string>& file_lines);
     bool if_cond_parser(const string& condition);
     vector<string> no_title(vector<string>& blocks);

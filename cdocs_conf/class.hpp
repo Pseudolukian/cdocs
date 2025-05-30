@@ -12,38 +12,37 @@ public:
     std::string docs_out_path;
     std::string docs_tmp_path;
     std::string files_extansions;
-    std::map<std::string, std::variant<std::string, unsigned int, double>> global_vars;
-    std::vector<std::string> vars_for_parsing;
+    std::string vars;
+    std::map<std::string, std::map<std::string, Value>> global_vars;
+    std::map<std::string, std::map<std::string, Value>> vars_for_add;
 
     Config(const std::string& config_file_name) : config_file_name(config_file_name) {
-        auto config_vars = CDOCS_parser::vars_from_file(CDOCS_files::read_file(config_file_name));
-        docs_root_path = std::get<std::string>(config_vars["Docs_root"]);
-        docs_out_path = std::get<std::string>(config_vars["Docs_output"]);
-        docs_tmp_path = std::get<std::string>(config_vars["Docs_tmp"]);
-        files_extansions = std::get<std::string>(config_vars["Files_extansions"]);
-        
-        
+        std::vector<std::string> config = CDOCS_files::read_file(config_file_name);
+        std::map<std::string, std::map<std::string, Value>> config_vars = CDOCS_parser::vars_from_file(config);
+        docs_root_path = std::get<std::string>(config_vars["Paths"]["Docs_root"]);
+        docs_out_path = std::get<std::string>(config_vars["Paths"]["Docs_output"]);
+        docs_tmp_path = std::get<std::string>(config_vars["Paths"]["Docs_tmp"]);
+        files_extansions = std::get<std::string>(config_vars["Parser"]["Files_extansions"]);
+        std::stringstream ss(std::get<std::string>(config_vars["Parser"]["Vars"]));
 
-        for (const auto& [key, value] : config_vars) {
+        std::string token;
+        while (std::getline(ss, token, ',')) {
+            vars_files.push_back(token);
+        }
 
-            if (key.find("_vars") != std::string::npos) {
-                if (std::holds_alternative<std::string>(value)) {
-                    vars_for_parsing.push_back(std::get<std::string>(value));
+        for (const std::string& file : vars_files) {
+            std::vector<std::string> vars_set = CDOCS_files::read_file(file);
+            auto file_vars = CDOCS_parser::vars_from_file(vars_set);
+    
+            // Вставляем все элементы из file_vars в global_vars
+            for (const auto& [section, vars] : file_vars) {
+                global_vars[section].insert(vars.begin(), vars.end());
                 }
-            }
         }
-        
-        for (const auto& var : vars_for_parsing) {
-            auto parsed_vars = CDOCS_parser::vars_from_file(CDOCS_files::read_file(var));
-            for (const auto& [key, value] : parsed_vars) {
-                global_vars[key] = value;
-            }
-        }
-    }
-};
 
-static auto variantToString = [](const auto& value) -> std::string {
-    std::ostringstream oss;
-    oss << value;
-    return oss.str();
+
+    }
+    private:
+        std::vector<std::string> vars_files;
+        std::vector<std::string> vars_for_parsing;
 };
