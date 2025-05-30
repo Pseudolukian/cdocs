@@ -1,6 +1,6 @@
 #include "class.hpp"
 
-vector<string> CDOCS_parser::block_include(vector<string> blocks, const string& file_name, int depth) {
+vector<string> CDOCS_parser::block_include(vector<string> blocks, const string& file_name, int depth, std::regex& block_include_, std::regex& block_include_no_title) {
     // Защита от циклических инклудов
     constexpr int MAX_INCLUDE_DEPTH = 10;
     if (depth > MAX_INCLUDE_DEPTH) {
@@ -11,8 +11,6 @@ vector<string> CDOCS_parser::block_include(vector<string> blocks, const string& 
 
     // 1. Находим все @include директивы
     vector<string> out;
-    regex include_regex(R"(@include\s*\(\s*([^)]+)\s*\))");
-    regex include_no_title_regex(R"(@include\s*notitle\s*\(\s*([^)]+)\s*\))");
     smatch matches;
 
     struct FileData {
@@ -27,11 +25,11 @@ vector<string> CDOCS_parser::block_include(vector<string> blocks, const string& 
     for (size_t i = 0; i < blocks.size(); ++i) {
         const string& block = blocks[i];
         if (block.size() > 15 && block.size() < 100) {
-            if (regex_search(block, matches, include_no_title_regex)) {
+            if (regex_search(block, matches, block_include_no_title)) {
                 auto result = CDOCS_parser::resolve_include_path(matches[1].str(), file_name);
                 includes_map[i] = FileData{result.first, result.second, false};
             }
-            else if (regex_search(block, matches, include_regex)) {
+            else if (regex_search(block, matches, block_include_)) {
                 auto result = CDOCS_parser::resolve_include_path(matches[1].str(), file_name);
                 includes_map[i] = FileData{result.first, result.second, true};
             }
@@ -55,7 +53,7 @@ vector<string> CDOCS_parser::block_include(vector<string> blocks, const string& 
             );
             
             // Рекурсивная обработка вложенных include
-            auto processed_content = block_include(included_content, file_data.path.string(), depth + 1);
+            auto processed_content = block_include(included_content, file_data.path.string(), depth + 1, block_include_, block_include_no_title);
             out.insert(out.end(), processed_content.begin(), processed_content.end());
         } catch (const std::exception& e) {
             throw std::runtime_error("Error processing include at position " + 

@@ -1,10 +1,9 @@
 #include "class.hpp"
 
-map<string, map<string, Value>> CDOCS_parser::vars_from_file(std::vector<std::string>& vars_list) {
+map<string, map<string, Value>> CDOCS_parser::vars_from_file(std::vector<std::string>& vars_list, std::regex& md_vars_group) {
     map<string, map<string, Value>> result;
     string current_group = "main"; // По умолчанию группа main
 
-    std::regex group_regex(R"(\[([^\]]+)\])"); // Регулярка для извлечения названия группы
     std::smatch match;
 
     for (string line : vars_list) {
@@ -15,7 +14,7 @@ map<string, map<string, Value>> CDOCS_parser::vars_from_file(std::vector<std::st
         if (line.empty()) continue;
 
         // Проверяем, является ли строка объявлением группы
-        if (std::regex_search(line, match, group_regex)) {
+        if (std::regex_search(line, match, md_vars_group)) {
             current_group = match[1].str(); // Извлекаем название группы
             continue; // Переходим к следующей строке
         }

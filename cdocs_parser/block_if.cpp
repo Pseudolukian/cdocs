@@ -1,8 +1,6 @@
 #include "class.hpp"
 
-std::vector<std::string> CDOCS_parser::block_if(std::vector<std::string>& lines) {
-    std::regex if_regex(R"(@if\s*\(\s*([^)]+)\s*\))");
-    std::regex endif_regex(R"(@endif)");
+std::vector<std::string> CDOCS_parser::block_if(std::vector<std::string>& lines, std::regex& block_if_regex_start, std::regex& block_if_regex_end) {
     std::smatch match;
     std::vector<int> break_points;
     std::vector<bool> condition_stack = {true}; // Стек для условий
@@ -16,14 +14,14 @@ std::vector<std::string> CDOCS_parser::block_if(std::vector<std::string>& lines)
         }
 
         if (line.size() > 10 && line.size() < 50) {
-            if (std::regex_search(line, match, if_regex)) {
+            if (std::regex_search(line, match, block_if_regex_start)) {
                 std::string condition = match[1].str();
                 bool condition_met = CDOCS_parser::if_cond_parser(condition);
                 condition_stack.push_back(current_condition && condition_met);
                 break_points.push_back(line_pos); // Удаляем строку с @if
             }
         } else if (line.size() < 10) {
-            if (std::regex_search(line, endif_regex)) {
+            if (std::regex_search(line, block_if_regex_end)) {
                 condition_stack.pop_back(); // Завершаем текущий блок
                 break_points.push_back(line_pos); // Удаляем строку с @endif
             }

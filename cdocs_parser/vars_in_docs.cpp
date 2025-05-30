@@ -2,13 +2,12 @@
 
 using namespace std;
 
-vector<string> CDOCS_parser::vars_in_docs(vector<string>& file_lines, const std::map<std::string, std::map<std::string, Value>>& vars_list) {
+vector<string> CDOCS_parser::vars_in_docs(vector<string>& file_lines, const std::map<std::string, std::map<std::string, Value>>& vars_list, std::regex& md_vars) {
     vector<string> result;
-    const regex var_pattern(R"(\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\})");
 
     for (const string& line : file_lines) {
         string processed_line = line;
-        sregex_iterator it(processed_line.begin(), processed_line.end(), var_pattern);
+        sregex_iterator it(processed_line.begin(), processed_line.end(), md_vars);
         sregex_iterator end;
 
         // Store replacements to apply after iteration

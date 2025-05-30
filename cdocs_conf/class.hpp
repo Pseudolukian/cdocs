@@ -13,12 +13,13 @@ public:
     std::string docs_tmp_path;
     std::string files_extansions;
     std::string vars;
+    std::regex vars_group_regex;
     std::map<std::string, std::map<std::string, Value>> global_vars;
     std::map<std::string, std::map<std::string, Value>> vars_for_add;
 
-    Config(const std::string& config_file_name) : config_file_name(config_file_name) {
+    Config(const std::string& config_file_name, std::regex vars_group_regex) : config_file_name(config_file_name), vars_group_regex(vars_group_regex) {
         std::vector<std::string> config = CDOCS_files::read_file(config_file_name);
-        std::map<std::string, std::map<std::string, Value>> config_vars = CDOCS_parser::vars_from_file(config);
+        std::map<std::string, std::map<std::string, Value>> config_vars = CDOCS_parser::vars_from_file(config, vars_group_regex);
         docs_root_path = std::get<std::string>(config_vars["Paths"]["Docs_root"]);
         docs_out_path = std::get<std::string>(config_vars["Paths"]["Docs_output"]);
         docs_tmp_path = std::get<std::string>(config_vars["Paths"]["Docs_tmp"]);
@@ -32,7 +33,7 @@ public:
 
         for (const std::string& file : vars_files) {
             std::vector<std::string> vars_set = CDOCS_files::read_file(file);
-            auto file_vars = CDOCS_parser::vars_from_file(vars_set);
+            auto file_vars = CDOCS_parser::vars_from_file(vars_set, vars_group_regex);
     
             // Вставляем все элементы из file_vars в global_vars
             for (const auto& [section, vars] : file_vars) {

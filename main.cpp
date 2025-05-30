@@ -1,5 +1,6 @@
 //main.cpp
 #include "cdocs_conf/class.hpp"
+#include "cdocs_regex/class.hpp"
 #include <chrono>
 
 using namespace std;
@@ -9,9 +10,16 @@ int main() {
     // Start total execution time measurement
     auto total_start = high_resolution_clock::now();
 
+    cout << "Compiling regex ..." << endl;
+    auto comp_regex_start = high_resolution_clock::now();
+    CDOCS_regex cdocs_regex = CDOCS_regex();
+    auto comp_regex_end = high_resolution_clock::now();
+    auto comp_regex_duration = duration_cast<milliseconds>(comp_regex_end - comp_regex_start);
+
+
     cout << "Uploading config and vars..." << endl;
     auto config_start = high_resolution_clock::now();
-    Config conf = Config("cdocs.cfg");
+    Config conf = Config("cdocs.cfg", cdocs_regex.file_vars_group);
     CDOCS_files files = CDOCS_files(conf.docs_root_path, conf.docs_out_path, { conf.files_extansions });
     CDOCS_parser parser = CDOCS_parser();
     auto config_end = high_resolution_clock::now();
@@ -30,7 +38,7 @@ int main() {
     
     for (const auto& file : files_list) {
         vector<string> lines = files.read_file(conf.docs_root_path + file);
-        files.save_file(conf.docs_tmp_path + file, parser.vars_in_docs(lines, conf.global_vars));
+        files.save_file(conf.docs_tmp_path + file, parser.vars_in_docs(lines, conf.global_vars, cdocs_regex.md_vars));
     }
     
     auto vars_end = high_resolution_clock::now();
@@ -54,7 +62,9 @@ int main() {
     
     for (const auto& file : files_list) {
         vector<string> lines = files.read_file(conf.docs_tmp_path + file);
-        files.save_file(conf.docs_tmp_path + file, parser.block_include(lines, conf.docs_tmp_path + file));
+        files.save_file(conf.docs_tmp_path + file, 
+            parser.block_include(lines, conf.docs_tmp_path + file, 1, cdocs_regex.md_block_include_, cdocs_regex.md_block_include_no_title)
+        );
     }
     
     auto include_end = high_resolution_clock::now();
@@ -67,7 +77,7 @@ int main() {
 
     for (const auto& file : files_list) {
         vector<string> lines = files.read_file(conf.docs_tmp_path + file);
-        files.save_file(conf.docs_out_path + file, parser.block_if(lines));
+        files.save_file(conf.docs_out_path + file, parser.block_if(lines, cdocs_regex.md_block_if_start, cdocs_regex.md_block_if_end));
     }
     
     auto block_if_end = high_resolution_clock::now();
@@ -80,6 +90,9 @@ int main() {
     
     cout << "Files processed: " << files_list.size() << endl;
 
+
+    cout << "Time taken to compile regex: " 
+        << duration_cast<duration<double>>(comp_regex_duration).count() << " s" << endl;
     cout << "Time taken to load conf and vars: " 
         << duration_cast<duration<double>>(config_duration).count() << " s" << endl;
 
