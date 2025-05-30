@@ -22,11 +22,22 @@
 
 ### Tag v1.0 MD Preprocessor  
 - Files processed: 748  
-- Time taken to preprocess variables: **2.705 s**  
-- Time taken to preprocess inline if: **0.149 s**  
-- Time taken to preprocess includes: **3.595 s**  
-- Time taken to preprocess block_if: **5.427 s**  
-- **Total execution time: 11.914 s**  
+- Time taken to preprocess variables: 2.705 s  
+- Time taken to preprocess inline if: 0.149 s  
+- Time taken to preprocess includes: 3.595 s  
+- Time taken to preprocess block_if: 5.427 s  
+- Total execution time: **11.914 s**  
+
+### Tag v1.5 Optimized
+- Files processed: 748
+- Time taken to compile regex: 0.003 s
+- Time taken to load conf and vars: 0.002 s
+- Time taken to get file list to preproc: 0.044 s
+- Time taken to preprocess vars: 1.659 s
+- Time taken to preprocess inline if: 0.224 s
+- Time taken to preprocess include: 1.452 s
+- Time taken to preprocess block_if: 0.601 s
+- Total execution time: **3.99 s**
 
 ## Performance Optimization Plan  
 
