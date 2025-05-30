@@ -32,7 +32,7 @@ public:
     
     // Preprocessing block
     vector<string> block_include(vector<string> blocks, const string& file_name, int depth = 0);
-    fs::path resolve_include_path(const string& path, const string& base_file);
+    std::pair<fs::path, std::string> resolve_include_path(const std::string& path, const std::string& base_file);
     vector<std::string> block_if(std::vector<std::string>& lines);
     
 private:

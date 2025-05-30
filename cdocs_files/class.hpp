@@ -5,6 +5,8 @@
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
+#include <regex>
+#include "../cdocs_parser/class.hpp"
 
 namespace fs = std::filesystem;
 
@@ -20,5 +22,6 @@ public:
     
     std::vector<std::string> get_files_list();
     static std::vector<std::string> read_file(const std::string& filename);
+    static std::vector<std::string> read_file_ext(const std::string& filename, std::string anchor = "", bool title = true);
     void save_file(const std::string& filename, const std::vector<std::string>& lines);
 };
