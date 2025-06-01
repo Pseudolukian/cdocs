@@ -14,6 +14,7 @@
 #include <array>
 #include <set>
 #include "../cdocs_files/class.hpp"
+#include <unordered_map>
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -31,7 +32,7 @@ public:
     vector<string> from_anchor(vector<string>& blocks, string& anchor, std::regex& md_header);
     
     // Preprocessing block
-    vector<string> block_include(vector<string> blocks, const string& file_name, int depth, std::regex& block_include_, std::regex& block_include_no_title);
+    vector<string> block_include(vector<string> blocks, const string& file_name, int depth, std::regex& block_include_, std::regex& block_include_no_title, std::unordered_map<string, std::vector<std::string>>& buffer_includes);
     std::pair<fs::path, std::string> resolve_include_path(const std::string& path, const std::string& base_file);
     std::vector<std::string> block_if(std::vector<std::string>& lines, std::regex& block_if_regex_start, std::regex& block_if_regex_end);
     

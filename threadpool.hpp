@@ -1,77 +1,36 @@
-#ifndef THREADPOOL_HPP
-#define THREADPOOL_HPP
 
-#include <vector>
-#include <thread>
-#include <queue>
-#include <mutex>
-#include <condition_variable>
-#include <functional>
-#include <atomic>
 
-class ThreadPool {
-private:
-    std::vector<std::thread> workers;
-    std::queue<std::function<void()>> tasks;
-    std::mutex queue_mutex;
-    std::condition_variable condition;
-    std::atomic<bool> stop;
-    std::atomic<size_t> active_tasks;
-
-public:
-    ThreadPool(size_t threads = 0) : stop(false), active_tasks(0) {
-        if (threads == 0) {
-            threads = std::max(1u, std::thread::hardware_concurrency());
-        }
-
-        for (size_t i = 0; i < threads; ++i) {
-            workers.emplace_back([this] {
-                while (true) {
-                    std::function<void()> task;
-                    {
-                        std::unique_lock<std::mutex> lock(this->queue_mutex);
-                        this->condition.wait(lock,
-                            [this] { return this->stop || !this->tasks.empty(); });
-                        if (this->stop && this->tasks.empty())
-                            return;
-                        task = std::move(this->tasks.front());
-                        this->tasks.pop();
-                    }
-                    ++active_tasks;
-                    task();
-                    --active_tasks;
-                    condition.notify_one(); // Notify after task completion
-                }
-            });
-        }
+void thread (std::vector<std::string>& files_list) {
+    // Step 1. Preprocessing vars
+    for (const auto& file : files_list) {
+        vector<string> lines = files.read_file(conf.docs_root_path + file);
+        files.save_file(conf.docs_tmp_path + file, parser.vars_in_docs(lines, conf.global_vars, cdocs_regex.md_vars));
     }
 
-    template<class F>
-    void enqueue(F&& f) {
-        {
-            std::unique_lock<std::mutex> lock(queue_mutex);
-            tasks.emplace(std::forward<F>(f));
-        }
-        condition.notify_one();
+    // Step 2. Preprocessing inline_if
+    for (const auto& file : files_list) {
+        vector<string> lines = files.read_file(conf.docs_tmp_path + file);
+        files.save_file(conf.docs_tmp_path + file, parser.inline_if(lines));
     }
-
-    void wait() {
-        std::unique_lock<std::mutex> lock(queue_mutex);
-        condition.wait(lock, [this] { return tasks.empty() && active_tasks == 0; });
+    
+    // Step 3. Preprocessing block_include
+    for (const auto& file : files_list) {
+        vector<string> lines = files.read_file(conf.docs_tmp_path + file);
+        files.save_file(conf.docs_tmp_path + file, 
+            parser.block_include(lines, conf.docs_tmp_path + file, 1, cdocs_regex.md_block_include_, cdocs_regex.md_block_include_no_title)
+        );
     }
-
-    ~ThreadPool() {
-        {
-            std::unique_lock<std::mutex> lock(queue_mutex);
-            stop = true;
-        }
-        condition.notify_all();
-        for (std::thread& worker : workers) {
-            if (worker.joinable()) {
-                worker.join();
-            }
-        }
+    
+    // Step 4. Preprocessing block_if
+    for (const auto& file : files_list) {
+        vector<string> lines = files.read_file(conf.docs_tmp_path + file);
+        files.save_file(conf.docs_out_path + file, parser.block_if(lines, cdocs_regex.md_block_if_start, cdocs_regex.md_block_if_end));
     }
-};
+}
 
-#endif // THREADPOOL_HPP
+
+    
+
+
+
+    

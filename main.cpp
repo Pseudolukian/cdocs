@@ -1,6 +1,7 @@
 //main.cpp
 #include "cdocs_conf/class.hpp"
 #include "cdocs_regex/class.hpp"
+#include "cdocs_buffer/class.hpp"
 #include <chrono>
 
 using namespace std;
@@ -9,6 +10,8 @@ using namespace std::chrono;
 int main() {
     // Start total execution time measurement
     auto total_start = high_resolution_clock::now();
+
+    CDOCS_buffer buffer = CDOCS_buffer();
 
     cout << "Compiling regex ..." << endl;
     auto comp_regex_start = high_resolution_clock::now();
@@ -63,7 +66,7 @@ int main() {
     for (const auto& file : files_list) {
         vector<string> lines = files.read_file(conf.docs_tmp_path + file);
         files.save_file(conf.docs_tmp_path + file, 
-            parser.block_include(lines, conf.docs_tmp_path + file, 1, cdocs_regex.md_block_include_, cdocs_regex.md_block_include_no_title)
+            parser.block_include(lines, conf.docs_tmp_path + file, 1, cdocs_regex.md_block_include_, cdocs_regex.md_block_include_no_title, buffer.includes)
         );
     }
     
@@ -109,6 +112,8 @@ int main() {
         << duration_cast<duration<double>>(block_if_duration).count() << " s" << endl;
     cout << "Total execution time: " 
         << duration_cast<duration<double>>(total_duration).count() << " s" << endl;
+    
+    cout << "Count of includes in buffer: " << buffer.includes.size() << endl;
     
     return 0;
 }
