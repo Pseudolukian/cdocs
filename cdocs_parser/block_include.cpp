@@ -3,6 +3,7 @@
 std::vector<std::string> CDOCS_parser::block_include(const std::vector<std::string>& blocks, 
                                const std::string& file_name, 
                                const std::regex& include_regex,
+                               const std::regex& header_regex,
                                const std::unordered_map<string, std::vector<std::string>>& buffer_content,
                                std::unordered_map<string, std::vector<std::string>>& buffer_include) 
 {

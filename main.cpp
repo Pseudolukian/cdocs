@@ -64,7 +64,11 @@ int main() {
     cout << "Preprocessing block_include..." << endl;
     
     for (const auto& [file, content] : buffer.after_inline_if_preproc) {
-        buffer.after_includes_preproc[file] = parser.block_include(content, file, cdocs_regex.md_block_include_, buffer.after_inline_if_preproc, buffer.includes);
+        buffer.after_includes_preproc[file] = parser.block_include(content, file, 
+                                                cdocs_regex.md_block_include_, 
+                                                cdocs_regex.md_header,
+                                                buffer.after_inline_if_preproc, 
+                                                buffer.includes);
     }
     
     buffer.after_inline_if_preproc.clear();

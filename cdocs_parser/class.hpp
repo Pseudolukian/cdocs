@@ -35,10 +35,14 @@ public:
     std::vector<std::string> block_include(const std::vector<std::string>& blocks, 
                                const std::string& file_name, 
                                const std::regex& include_regex,
+                               const std::regex& header_regex,
                                const std::unordered_map<string, std::vector<std::string>>& buffer_content,
                                std::unordered_map<string, std::vector<std::string>>& buffer_include);
-    std::pair<fs::path, std::string> resolve_include_path(const std::string& path, const std::string& base_file);
     std::vector<std::string> block_if(const std::vector<std::string>& lines, std::regex& block_if_regex_start, std::regex& block_if_regex_end);
+
+    // Additions
+    static std::vector<std::string> notitle(std::vector<std::string>& lines, std::regex& header);
+    static std::vector<std::string> anchor(std::vector<std::string>& lines, std::string& anchor, std::regex& header);
     
 private:
     std::vector<std::string> vars_list_;
