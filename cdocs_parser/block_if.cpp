@@ -1,6 +1,6 @@
 #include "class.hpp"
 
-std::vector<std::string> CDOCS_parser::block_if(std::vector<std::string>& lines, std::regex& block_if_regex_start, std::regex& block_if_regex_end) {
+std::vector<std::string> CDOCS_parser::block_if(const std::vector<std::string>& lines, std::regex& block_if_regex_start, std::regex& block_if_regex_end) {
     std::smatch match;
     std::vector<int> break_points;
     std::vector<bool> condition_stack = {true}; // Стек для условий

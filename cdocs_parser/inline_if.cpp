@@ -4,7 +4,7 @@
 using namespace std;
 
 
-vector<string> CDOCS_parser::inline_if(vector<string>& file_lines) {
+vector<string> CDOCS_parser::inline_if(const vector<string>& file_lines) {
     vector<string> result_lines;
     const string start_delim = "{% if ";
     const string end_delim = " %}";

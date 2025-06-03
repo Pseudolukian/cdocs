@@ -1,0 +1,30 @@
+[material_category]
+
+overview=<span class = "overview-tag tags-shape tags-color-text"> Overview </span>
+use_cases=<span class = "use_cases-tag tags-shape tags-color-text"> Use cases </span>
+practice=<span class = "practice-tag tags-shape tags-color-text"> Practice </span>
+database_internals=<span class = "database_internals-tag tags-shape tags-color-text"> Database internals</span>
+releases=<span class = "releases-tag tags-shape tags-color-text"> Releases </span>
+testing=<span class = "testing-tag tags-shape tags-color-text"> Testing </span>
+general=<span class = "general-tag tags-shape tags-color-text"> General </span>
+
+[grpc-statuses]
+
+non-retryable=<span class = "overview-tag tags-shape tags-color-text"> [Неповторяемый](../error_handling.md) </span>
+conditionally-retryable=<span class = "use_cases-tag tags-shape tags-color-text"> [Условно повторяемый](../error_handling.md) | Моментально </span>
+conditionally-retryable-fastbackoff=<span class = "use_cases-tag tags-shape tags-color-text"> [Условно повторяемый](../error_handling.md) | Короткая задержка </span>
+conditionally-retryable-slowbackoff=<span class = "use_cases-tag tags-shape tags-color-text"> [Условно повторяемый](../error_handling.md) | Большая задержка </span>
+retryable=<span class = "practice-tag tags-shape tags-color-text"> [Повторяемый](../error_handling.md) | Моментально </span>
+retryable-fastbackoff=<span class = "practice-tag tags-shape tags-color-text"> [Повторяемый](../error_handling.md) | Короткая задержка </span>
+retryable-slowbackoff=<span class = "practice-tag tags-shape tags-color-text"> [Повторяемый](../error_handling.md) | Большая задержка </span>
+
+
+[ydb-statuses]
+
+non-retryable=<span class = "overview-tag tags-shape tags-color-text"> [Неповторяемый](../error_handling.md) </span>
+conditionally-retryable=<span class = "use_cases-tag tags-shape tags-color-text"> [Условно повторяемый](../error_handling.md) | Моментально </span>
+conditionally-retryable-fastbackoff=<span class = "use_cases-tag tags-shape tags-color-text"> [Условно повторяемый](../error_handling.md) | Короткая задержка </span>
+conditionally-retryable-slowbackoff=<span class = "use_cases-tag tags-shape tags-color-text"> [Условно повторяемый](../error_handling.md) | Большая задержка </span>
+retryable=<span class = "practice-tag tags-shape tags-color-text"> [Повторяемый](../error_handling.md) | Моментально </span>
+retryable-fastbackoff=<span class = "practice-tag tags-shape tags-color-text"> [Повторяемый](../error_handling.md) | Короткая задержка </span>
+retryable-slowbackoff=<span class = "practice-tag tags-shape tags-color-text"> [Повторяемый](../error_handling.md) | Большая задержка </span>

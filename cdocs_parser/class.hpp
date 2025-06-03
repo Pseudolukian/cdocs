@@ -25,16 +25,20 @@ public:
     CDOCS_parser();
     // Preprocessing inline
     static map<string, map<string, Value>> vars_from_file(std::vector<std::string>& vars_list, std::regex& md_vars_group);
-    vector<string> vars_in_docs(vector<string>& file_lines, const std::map<std::string, std::map<std::string, Value>>& vars_list, std::regex& md_vars);
-    vector<string> inline_if(vector<string>& file_lines);
+    vector<string> vars_in_docs(const vector<string>& file_lines, const std::map<std::string, std::map<std::string, Value>>& vars_list, std::regex& md_vars);
+    vector<string> inline_if(const vector<string>& file_lines);
     bool if_cond_parser(const string& condition);
     vector<string> no_title(vector<string>& blocks);
     vector<string> from_anchor(vector<string>& blocks, string& anchor, std::regex& md_header);
     
     // Preprocessing block
-    vector<string> block_include(vector<string> blocks, const string& file_name, int depth, std::regex& block_include_, std::regex& block_include_no_title, std::unordered_map<string, std::vector<std::string>>& buffer_includes);
+    std::vector<std::string> block_include(const std::vector<std::string>& blocks, 
+                               const std::string& file_name, 
+                               const std::regex& include_regex,
+                               const std::unordered_map<string, std::vector<std::string>>& buffer_content,
+                               std::unordered_map<string, std::vector<std::string>>& buffer_include);
     std::pair<fs::path, std::string> resolve_include_path(const std::string& path, const std::string& base_file);
-    std::vector<std::string> block_if(std::vector<std::string>& lines, std::regex& block_if_regex_start, std::regex& block_if_regex_end);
+    std::vector<std::string> block_if(const std::vector<std::string>& lines, std::regex& block_if_regex_start, std::regex& block_if_regex_end);
     
 private:
     std::vector<std::string> vars_list_;

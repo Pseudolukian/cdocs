@@ -41,7 +41,7 @@ int main() {
     
     for (const auto& file : files_list) {
         vector<string> lines = files.read_file(conf.docs_root_path + file);
-        files.save_file(conf.docs_tmp_path + file, parser.vars_in_docs(lines, conf.global_vars, cdocs_regex.md_vars));
+        buffer.after_vars_preproc[file] = parser.vars_in_docs(lines, conf.global_vars, cdocs_regex.md_vars);
     }
     
     auto vars_end = high_resolution_clock::now();
@@ -51,37 +51,38 @@ int main() {
     cout << "Preprocessing inline_if..." << endl;
     auto if_start = high_resolution_clock::now();
 
-    for (const auto& file : files_list) {
-        vector<string> lines = files.read_file(conf.docs_tmp_path + file);
-        files.save_file(conf.docs_tmp_path + file, parser.inline_if(lines));
+    for (const auto& [file, content] : buffer.after_vars_preproc) {
+        buffer.after_inline_if_preproc[file] = parser.inline_if(content);
     }
+    buffer.after_vars_preproc.clear();
     
     auto if_end = high_resolution_clock::now();
     auto if_duration = duration_cast<milliseconds>(if_end - if_start);
-
+    
     // Step 3. Preprocessing block_include
     auto include_start = high_resolution_clock::now();
     cout << "Preprocessing block_include..." << endl;
     
-    for (const auto& file : files_list) {
-        vector<string> lines = files.read_file(conf.docs_tmp_path + file);
-        files.save_file(conf.docs_tmp_path + file, 
-            parser.block_include(lines, conf.docs_tmp_path + file, 1, cdocs_regex.md_block_include_, cdocs_regex.md_block_include_no_title, buffer.includes)
-        );
+    for (const auto& [file, content] : buffer.after_inline_if_preproc) {
+        buffer.after_includes_preproc[file] = parser.block_include(content, file, cdocs_regex.md_block_include_, buffer.after_inline_if_preproc, buffer.includes);
     }
+    
+    buffer.after_inline_if_preproc.clear();
     
     auto include_end = high_resolution_clock::now();
     auto include_duration = duration_cast<milliseconds>(include_end - include_start);
 
-
+    
     // Step 4. Preprocessing block_if
     auto block_if_start = high_resolution_clock::now();
     cout << "Preprocessing block_if..." << endl;
 
-    for (const auto& file : files_list) {
-        vector<string> lines = files.read_file(conf.docs_tmp_path + file);
-        files.save_file(conf.docs_out_path + file, parser.block_if(lines, cdocs_regex.md_block_if_start, cdocs_regex.md_block_if_end));
+    for (const auto& [file, content] : buffer.after_includes_preproc) {
+        files.save_file(conf.docs_out_path + file, parser.block_if(content, cdocs_regex.md_block_if_start, cdocs_regex.md_block_if_end));
     }
+
+    buffer.after_includes_preproc.clear();
+    buffer.includes.clear();
     
     auto block_if_end = high_resolution_clock::now();
     auto block_if_duration = duration_cast<milliseconds>(block_if_end - block_if_start);
