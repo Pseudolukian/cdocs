@@ -8,14 +8,18 @@
 
 ## Implemented Features  
 
-1. Variable parsing in `.md`.  
-2. Inline `if` condition parsing in `.md`.  
-3. Include block implementation in `.md`.  
-4. If-block condition implementation in `.md`.  
+### Variables
+
+Using `{{ var_name }}` template for add vars in the `.md`. Vars split by the group: default group -- main, other groups ...
+
+### Inline if conditions
+
+### Block if conditions
+
+### Block include
 
 ## Planned Improvements  
-
-- Optimize the Markdown parser. Reduce parsing time for 748 files to under 8 seconds.  
+  
 - Develop an MD-to-HTML converter.  
 
 ## Performance Test Results  
@@ -38,6 +42,17 @@
 - Time taken to preprocess include: 1.452 s
 - Time taken to preprocess block_if: 0.601 s
 - Total execution time: **3.99 s**
+
+### Tag v1.7 Boost more performance
+- Files processed: 748
+- Time taken to compile regex: 0.006 s
+- Time taken to load conf and vars: 0.007 s
+- Time taken to get file list to preproc: 0.058 s
+- Time taken to preprocess vars: 0.073 s
+- Time taken to preprocess inline if: 0.05 s
+- Time taken to preprocess include: 0.233 s
+- Time taken to preprocess block_if: 0.558 s
+- Total execution time: **0.989 s**
 
 ## Performance Optimization Plan  
 
