@@ -2,7 +2,9 @@
 
 using namespace std;
 
-vector<string> CDOCS_parser::vars_in_docs(const vector<string>& file_lines, const std::map<std::string, std::map<std::string, Value>>& vars_list, std::regex& md_vars) {
+vector<string> CDOCS_parser::vars_in_docs(const vector<string>& file_lines, 
+                                        const std::map<std::string, std::map<std::string, Value>>& vars_list, 
+                                        std::regex& md_vars) {
     vector<string> result;
 
     for (const string& line : file_lines) {

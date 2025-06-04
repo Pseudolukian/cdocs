@@ -39,14 +39,6 @@ std::vector<std::string> CDOCS_parser::block_include(const std::vector<std::stri
             std::cerr << "Anchor: " << (anchor != "none" ? "yes" : "no") << std::endl;
             std::cerr << "Notitle: " << (notitle ? "yes" : "no") << std::endl;
 
-            if (!anchor.empty()) {
-                // Обработка anchor
-            }
-            
-            if (notitle) {
-                // Обработка notitle
-            }
-
             fs::path current_file_path = file_name;
             fs::path include_path = rel_path;
             fs::path full_path = current_file_path.parent_path() / include_path;
@@ -57,9 +49,17 @@ std::vector<std::string> CDOCS_parser::block_include(const std::vector<std::stri
             if (include_it != buffer_include.end()) {
                 std::cerr << "Find in include_buffer: yes" << std::endl;
                 // Рекурсивно обрабатываем вложенные include
-                content_to_include[i] = block_include(include_it->second, full_path.string(), 
-                                                    include_regex, header_regex, 
-                                                    buffer_content, buffer_include, depth + 1);
+                std::vector<std::string> processed_content = CDOCS_parser::block_include(include_it->second, full_path.string(), 
+                                                                        include_regex, header_regex, 
+                                                                        buffer_content, buffer_include, depth + 1);
+                // Применяем обработку anchor и notitle
+                if (!anchor.empty() && anchor != "none") {
+                    processed_content = CDOCS_parser::anchor(processed_content, anchor, header_regex);
+                }
+                if (notitle) {
+                    processed_content = CDOCS_parser::notitle(processed_content, header_regex);
+                }
+                content_to_include[i] = std::move(processed_content);
                 continue;
             } else {
                 std::cerr << "Find in include_buffer: no" << std::endl;
@@ -73,8 +73,15 @@ std::vector<std::string> CDOCS_parser::block_include(const std::vector<std::stri
                 std::vector<std::string> processed_content = block_include(content_it->second, full_path.string(), 
                                                                         include_regex, header_regex, 
                                                                         buffer_content, buffer_include, depth + 1);
-                content_to_include[i] = processed_content;
-                buffer_include[full_path.string()] = processed_content;
+                // Применяем обработку anchor и notitle
+                if (!anchor.empty() && anchor != "none") {
+                    processed_content = CDOCS_parser::anchor(processed_content, anchor, header_regex);
+                }
+                if (notitle) {
+                    processed_content = CDOCS_parser::notitle(processed_content, header_regex);
+                }
+                content_to_include[i] = std::move(processed_content);
+                buffer_include[full_path.string()] = content_to_include[i];
                 continue;
             } else {
                 std::cerr << "Find in main buffer: no" << std::endl;
