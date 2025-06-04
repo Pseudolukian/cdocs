@@ -1,6 +1,6 @@
 #include "class.hpp"
 
-std::vector<std::string> CDOCS_parser::notitle(std::vector<std::string>& lines, std::regex& header) {
+std::vector<std::string> CDOCS_parser::notitle(std::vector<std::string>& lines, const std::regex& header) {
     std::vector<std::string> out;
     out.reserve(lines.size());
     

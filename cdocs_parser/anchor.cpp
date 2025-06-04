@@ -1,6 +1,6 @@
 #include "class.hpp"
 
-std::vector<std::string> CDOCS_parser::anchor(std::vector<std::string>& lines, std::string& anchor, std::regex& header) {
+std::vector<std::string> CDOCS_parser::anchor(std::vector<std::string>& lines, std::string anchor, const std::regex& header) {
     std::vector<std::string> out;
     std::stack<int> range;
 

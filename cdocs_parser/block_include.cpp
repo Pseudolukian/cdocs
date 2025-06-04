@@ -4,13 +4,19 @@ std::vector<std::string> CDOCS_parser::block_include(const std::vector<std::stri
                                const std::string& file_name, 
                                const std::regex& include_regex,
                                const std::regex& header_regex,
-                               const std::unordered_map<string, std::vector<std::string>>& buffer_content,
-                               std::unordered_map<string, std::vector<std::string>>& buffer_include) 
+                               const std::unordered_map<std::string, std::vector<std::string>>& buffer_content,
+                               std::unordered_map<std::string, std::vector<std::string>>& buffer_include,
+                               int depth) 
 {
     constexpr size_t MAX_INCLUDE_LENGTH = 80;
+    constexpr int MAX_DEPTH = 5;
     
-    std::vector<std::string> out;
-    std::map<int, std::vector<string>> content_to_include;
+    if (depth > MAX_DEPTH) {
+        std::cerr << "Error: Maximum include depth (" << MAX_DEPTH << ") exceeded in file: " << file_name << std::endl;
+        return blocks;
+    }
+    
+    std::map<int, std::vector<std::string>> content_to_include;
     
     // Первый проход: собираем информацию о включениях
     for (size_t i = 0; i < blocks.size(); ++i) {
@@ -26,43 +32,80 @@ std::vector<std::string> CDOCS_parser::block_include(const std::vector<std::stri
             const bool notitle = matches[2].matched;
             const std::string anchor = matches[3].matched ? matches[3].str() : "none";
 
+            // Вывод отладочной информации
+            std::cerr << "File: " << file_name << std::endl;
+            std::cerr << "Find @include: " << block << std::endl;
+            std::cerr << "Path for include: " << rel_path << std::endl;
+            std::cerr << "Anchor: " << (anchor != "none" ? "yes" : "no") << std::endl;
+            std::cerr << "Notitle: " << (notitle ? "yes" : "no") << std::endl;
+
+            if (!anchor.empty()) {
+                // Обработка anchor
+            }
+            
+            if (notitle) {
+                // Обработка notitle
+            }
+
             fs::path current_file_path = file_name;
             fs::path include_path = rel_path;
             fs::path full_path = current_file_path.parent_path() / include_path;
             full_path = full_path.lexically_normal();
 
             // Проверяем буфер включений
-            auto include_it = buffer_include.find(full_path);
+            auto include_it = buffer_include.find(full_path.string());
             if (include_it != buffer_include.end()) {
-                content_to_include[i] = include_it->second;
+                std::cerr << "Find in include_buffer: yes" << std::endl;
+                // Рекурсивно обрабатываем вложенные include
+                content_to_include[i] = block_include(include_it->second, full_path.string(), 
+                                                    include_regex, header_regex, 
+                                                    buffer_content, buffer_include, depth + 1);
                 continue;
+            } else {
+                std::cerr << "Find in include_buffer: no" << std::endl;
             }
 
             // Проверяем основной буфер
-            auto content_it = buffer_content.find(full_path);
+            auto content_it = buffer_content.find(full_path.string());
             if (content_it != buffer_content.end()) {
-                content_to_include[i] = content_it->second;
-                buffer_include[full_path] = content_it->second;
+                std::cerr << "Find in main buffer: yes" << std::endl;
+                // Рекурсивно обрабатываем вложенные include
+                std::vector<std::string> processed_content = block_include(content_it->second, full_path.string(), 
+                                                                        include_regex, header_regex, 
+                                                                        buffer_content, buffer_include, depth + 1);
+                content_to_include[i] = processed_content;
+                buffer_include[full_path.string()] = processed_content;
                 continue;
+            } else {
+                std::cerr << "Find in main buffer: no" << std::endl;
             }
 
             std::cerr << "Error: Could not find content for included file: " << full_path << std::endl;
-            // Если файл не найден, оставляем оригинальный блок
             continue;
         }
     }
 
-    // Второй проход: собираем итоговый вектор
-    out.reserve(blocks.size()); // Минимальный резерв
+    // Вычисляем итоговый размер выходного вектора
+    size_t total_size = blocks.size();
+    for (const auto& [_, content] : content_to_include) {
+        total_size += content.size() - 1; // Вычитаем 1, так как заменяем один блок
+    }
     
+    // Резервируем память для выходного вектора
+    std::vector<std::string> out;
+    out.reserve(total_size);
+    
+    // Второй проход: формируем выходной вектор
     for (size_t i = 0; i < blocks.size(); ++i) {
         auto it = content_to_include.find(i);
         if (it != content_to_include.end()) {
-            // Вставляем включенный контент вместо текущего блока
-            out.insert(out.end(), it->second.begin(), it->second.end());
+            // Вставляем содержимое включенного файла
+            out.insert(out.end(), 
+                      std::make_move_iterator(it->second.begin()),
+                      std::make_move_iterator(it->second.end()));
         } else {
-            // Просто копируем оригинальный блок
-            out.push_back(blocks[i]);
+            // Копируем оригинальный блок, если нет включения
+            out.emplace_back(blocks[i]);
         }
     }
 

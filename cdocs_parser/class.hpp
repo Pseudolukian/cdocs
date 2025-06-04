@@ -37,12 +37,13 @@ public:
                                const std::regex& include_regex,
                                const std::regex& header_regex,
                                const std::unordered_map<string, std::vector<std::string>>& buffer_content,
-                               std::unordered_map<string, std::vector<std::string>>& buffer_include);
+                               std::unordered_map<string, std::vector<std::string>>& buffer_include,
+                               int depth = 0);
     std::vector<std::string> block_if(const std::vector<std::string>& lines, std::regex& block_if_regex_start, std::regex& block_if_regex_end);
 
     // Additions
-    static std::vector<std::string> notitle(std::vector<std::string>& lines, std::regex& header);
-    static std::vector<std::string> anchor(std::vector<std::string>& lines, std::string& anchor, std::regex& header);
+    static std::vector<std::string> notitle(std::vector<std::string>& lines, const std::regex& header);
+    static std::vector<std::string> anchor(std::vector<std::string>& lines, std::string anchor, const std::regex& header);
     
 private:
     std::vector<std::string> vars_list_;
