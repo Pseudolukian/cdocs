@@ -32,13 +32,6 @@ std::vector<std::string> CDOCS_parser::block_include(const std::vector<std::stri
             const bool notitle = matches[2].matched;
             const std::string anchor = matches[3].matched ? matches[3].str() : "none";
 
-            // Вывод отладочной информации
-            std::cerr << "File: " << file_name << std::endl;
-            std::cerr << "Find @include: " << block << std::endl;
-            std::cerr << "Path for include: " << rel_path << std::endl;
-            std::cerr << "Anchor: " << (anchor != "none" ? "yes" : "no") << std::endl;
-            std::cerr << "Notitle: " << (notitle ? "yes" : "no") << std::endl;
-
             fs::path current_file_path = file_name;
             fs::path include_path = rel_path;
             fs::path full_path = current_file_path.parent_path() / include_path;
@@ -47,44 +40,44 @@ std::vector<std::string> CDOCS_parser::block_include(const std::vector<std::stri
             // Проверяем буфер включений
             auto include_it = buffer_include.find(full_path.string());
             if (include_it != buffer_include.end()) {
-                std::cerr << "Find in include_buffer: yes" << std::endl;
+                //std::cerr << "Find in include_buffer: yes" << std::endl;
                 // Рекурсивно обрабатываем вложенные include
                 std::vector<std::string> processed_content = CDOCS_parser::block_include(include_it->second, full_path.string(), 
                                                                         include_regex, header_regex, 
                                                                         buffer_content, buffer_include, depth + 1);
                 // Применяем обработку anchor и notitle
                 if (!anchor.empty() && anchor != "none") {
-                    processed_content = CDOCS_parser::anchor(processed_content, anchor, header_regex);
+                    processed_content = CDOCS_parser::anchor(processed_content, anchor);
                 }
                 if (notitle) {
-                    processed_content = CDOCS_parser::notitle(processed_content, header_regex);
+                    processed_content = CDOCS_parser::notitle(processed_content);
                 }
                 content_to_include[i] = std::move(processed_content);
                 continue;
             } else {
-                std::cerr << "Find in include_buffer: no" << std::endl;
+                //std::cerr << "Find in include_buffer: no" << std::endl;
             }
 
             // Проверяем основной буфер
             auto content_it = buffer_content.find(full_path.string());
             if (content_it != buffer_content.end()) {
-                std::cerr << "Find in main buffer: yes" << std::endl;
+                //std::cerr << "Find in main buffer: yes" << std::endl;
                 // Рекурсивно обрабатываем вложенные include
                 std::vector<std::string> processed_content = block_include(content_it->second, full_path.string(), 
                                                                         include_regex, header_regex, 
                                                                         buffer_content, buffer_include, depth + 1);
                 // Применяем обработку anchor и notitle
                 if (!anchor.empty() && anchor != "none") {
-                    processed_content = CDOCS_parser::anchor(processed_content, anchor, header_regex);
+                    processed_content = CDOCS_parser::anchor(processed_content, anchor);
                 }
                 if (notitle) {
-                    processed_content = CDOCS_parser::notitle(processed_content, header_regex);
+                    processed_content = CDOCS_parser::notitle(processed_content);
                 }
                 content_to_include[i] = std::move(processed_content);
                 buffer_include[full_path.string()] = content_to_include[i];
                 continue;
             } else {
-                std::cerr << "Find in main buffer: no" << std::endl;
+                //std::cerr << "Find in main buffer: no" << std::endl;
             }
 
             std::cerr << "Error: Could not find content for included file: " << full_path << std::endl;

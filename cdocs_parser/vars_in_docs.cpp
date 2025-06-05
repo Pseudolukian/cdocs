@@ -3,9 +3,12 @@
 using namespace std;
 
 vector<string> CDOCS_parser::vars_in_docs(const vector<string>& file_lines, 
-                                         const std::map<std::string, std::map<std::string, Value>>& vars_list) {
+                                         const std::map<std::string, std::map<std::string, Value>>& vars_list,
+                                         const std::string& file_name) {
     vector<string> result;
     map<string, string> cache; // Локальный кэш для хранения результатов замен
+    
+    vector<unique_ptr<ILogModel>> log_data; // Хранилище для логов
 
     for (const string& line : file_lines) {
         if (line.find("{{") == string::npos) {
@@ -85,7 +88,19 @@ vector<string> CDOCS_parser::vars_in_docs(const vector<string>& file_lines,
         }
 
         result.push_back(processed_line);
-    }
 
+        // Создаем запись лога
+        if (!replacements.empty()) {
+            auto log_entry = make_unique<LogVar>();
+            log_entry->File = file_name;
+            log_entry->Var = "X";
+            log_entry->Line_before_swap = line;
+            log_entry->Line_after_swap = processed_line;
+            log_entry->Value = replacements.back(); // Последнее замененное значение
+            log_data.push_back(move(log_entry));
+        }
+    }
+    
+    CDOCS_log::log("Vars", log_data, "/home/pynan/cdocs/logs/"); // Logging
     return result;
 }

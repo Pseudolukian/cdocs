@@ -41,7 +41,7 @@ int main() {
     
     for (const auto& file : files_list) {
         vector<string> lines = files.read_file(conf.docs_root_path + file);
-        buffer.after_vars_preproc[file] = parser.vars_in_docs(lines, conf.global_vars);
+        buffer.after_vars_preproc[file] = parser.vars_in_docs(lines, conf.global_vars, file);
     }
     
     auto vars_end = high_resolution_clock::now();
@@ -82,7 +82,7 @@ int main() {
     cout << "Preprocessing block_if..." << endl;
 
     for (const auto& [file, content] : buffer.after_includes_preproc) {
-        files.save_file(conf.docs_out_path + file, parser.block_if(content, cdocs_regex.md_block_if_start, cdocs_regex.md_block_if_end));
+        files.save_file(conf.docs_out_path + file, parser.block_if(content));
     }
 
     buffer.after_includes_preproc.clear();

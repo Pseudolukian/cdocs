@@ -2,8 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(cdocs)
 
-# Устанавливаем стандарт C++ (например, C++17)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Добавляем исходные файлы из папок
@@ -14,6 +13,7 @@ file(GLOB SOURCES
     cdocs_conf/*.cpp
     cdocs_regex/*.cpp
     cdocs_buffer/*.cpp
+    cdocs_log/*.cpp
 )
 
 file(GLOB NOBUILD_FILES 
