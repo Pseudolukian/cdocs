@@ -41,7 +41,7 @@ int main() {
     
     for (const auto& file : files_list) {
         vector<string> lines = files.read_file(conf.docs_root_path + file);
-        buffer.after_vars_preproc[file] = parser.vars_in_docs(lines, conf.global_vars, file, conf.log_vars);
+        buffer.after_vars_preproc[file] = parser.vars_in_docs(lines, conf.global_vars, file, conf.log_vars, conf.log_path);
     }
     
     auto vars_end = high_resolution_clock::now();

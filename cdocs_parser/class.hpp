@@ -13,6 +13,7 @@
 #include <iostream>
 #include <array>
 #include <set>
+#include <unordered_set>
 #include "../cdocs_files/class.hpp"
 #include <unordered_map>
 #include "../cdocs_log/class.hpp"
@@ -30,7 +31,8 @@ public:
                                 const std::map<std::string, 
                                 std::map<std::string, Value>>& vars_list, 
                                 const std::string& file_name,
-                                bool log = false);
+                                bool log_save,
+                                const std::string log_path);
     vector<string> inline_if(const vector<string>& file_lines);
     bool if_cond_parser(const string& condition);
     vector<string> no_title(vector<string>& blocks);
