@@ -3,14 +3,16 @@
 using namespace std;
 
 vector<string> CDOCS_parser::vars_in_docs(const vector<string>& file_lines, 
-                                         const std::map<std::string, std::map<std::string, Value>>& vars_list,
-                                         const std::string& file_name) {
+                                        const std::map<std::string, std::map<std::string, Value>>& vars_list,
+                                        const std::string& file_name,
+                                        bool log ) {
     vector<string> result;
-    map<string, string> cache; // Локальный кэш для хранения результатов замен
-    
-    vector<unique_ptr<ILogModel>> log_data; // Хранилище для логов
+    map<string, string> cache;
+    string var_for_log;
+    vector<unique_ptr<ILogModel>> log_data;
 
     for (const string& line : file_lines) {
+        
         if (line.find("{{") == string::npos) {
             result.push_back(line); // Пропускаем строки без {{
             continue;
@@ -77,6 +79,8 @@ vector<string> CDOCS_parser::vars_in_docs(const vector<string>& file_lines,
             positions.emplace_back(start, end - start + 2);
             replacements.push_back(value);
             pos = end + 2;
+
+            var_for_log = full_var_path;
         }
 
         // Применяем замены в обратном порядке
@@ -88,19 +92,20 @@ vector<string> CDOCS_parser::vars_in_docs(const vector<string>& file_lines,
         }
 
         result.push_back(processed_line);
-
-        // Создаем запись лога
+    
+    if (log) {
         if (!replacements.empty()) {
             auto log_entry = make_unique<LogVar>();
             log_entry->File = file_name;
-            log_entry->Var = "X";
+            log_entry->Var = var_for_log;
             log_entry->Line_before_swap = line;
             log_entry->Line_after_swap = processed_line;
-            log_entry->Value = replacements.back(); // Последнее замененное значение
+            log_entry->Value = replacements.back();
             log_data.push_back(move(log_entry));
         }
+        CDOCS_log::log("Vars", log_data, "/home/pynan/cdocs/logs/");
     }
     
-    CDOCS_log::log("Vars", log_data, "/home/pynan/cdocs/logs/"); // Logging
+    }
     return result;
 }

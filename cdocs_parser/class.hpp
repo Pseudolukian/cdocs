@@ -26,7 +26,11 @@ public:
     CDOCS_parser();
     // Preprocessing inline
     static map<string, map<string, Value>> vars_from_file(std::vector<std::string>& vars_list, std::regex& md_vars_group);
-    vector<string> vars_in_docs(const vector<string>& file_lines, const std::map<std::string, std::map<std::string, Value>>& vars_list, const std::string& file_name);
+    vector<string> vars_in_docs(const vector<string>& file_lines, 
+                                const std::map<std::string, 
+                                std::map<std::string, Value>>& vars_list, 
+                                const std::string& file_name,
+                                bool log = false);
     vector<string> inline_if(const vector<string>& file_lines);
     bool if_cond_parser(const string& condition);
     vector<string> no_title(vector<string>& blocks);

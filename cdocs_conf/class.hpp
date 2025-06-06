@@ -7,15 +7,25 @@
 
 class Config {
 public:
+    //Paths
     std::string config_file_name;
     std::string docs_root_path;
     std::string docs_out_path;
     std::string docs_tmp_path;
+    std::string log_path;
+    
+    // Extansions
     std::string files_extansions;
-    std::string vars;
+    
+    // Regex
     std::regex vars_group_regex;
+    
+    //Vars
     std::map<std::string, std::map<std::string, Value>> global_vars;
     std::map<std::string, std::map<std::string, Value>> vars_for_add;
+
+    //Log
+    bool log_vars;
 
     Config(const std::string& config_file_name, std::regex vars_group_regex) : config_file_name(config_file_name), vars_group_regex(vars_group_regex) {
         std::vector<std::string> config = CDOCS_files::read_file(config_file_name);
@@ -25,6 +35,10 @@ public:
         docs_tmp_path = std::get<std::string>(config_vars["Paths"]["Docs_tmp"]);
         files_extansions = std::get<std::string>(config_vars["Parser"]["Files_extansions"]);
         std::stringstream ss(std::get<std::string>(config_vars["Parser"]["Vars"]));
+        
+        //Log
+        log_vars = to_bool(std::get<std::string>(config_vars["Log"]["Log_module_vars"]));
+        log_path = std::get<std::string>(config_vars["Log"]["Log_dir"]);
 
         std::string token;
         while (std::getline(ss, token, ',')) {
@@ -43,6 +57,9 @@ public:
 
 
     }
+
+    static bool to_bool(const std::string& str);
+    
     private:
         std::vector<std::string> vars_files;
         std::vector<std::string> vars_for_parsing;
