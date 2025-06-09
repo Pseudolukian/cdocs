@@ -26,6 +26,8 @@ public:
 
     //Log
     bool log_vars;
+    bool log_inline_if;
+    bool log_include;
 
     Config(const std::string& config_file_name, std::regex vars_group_regex) : config_file_name(config_file_name), vars_group_regex(vars_group_regex) {
         std::vector<std::string> config = CDOCS_files::read_file(config_file_name);
@@ -38,6 +40,8 @@ public:
         
         //Log
         log_vars = to_bool(std::get<std::string>(config_vars["Log"]["Log_module_vars"]));
+        log_inline_if = to_bool(std::get<std::string>(config_vars["Log"]["Log_module_inline_if"]));
+        log_include = to_bool(std::get<std::string>(config_vars["Log"]["log_module_block_include"]));
         log_path = std::get<std::string>(config_vars["Log"]["Log_dir"]);
 
         std::string token;

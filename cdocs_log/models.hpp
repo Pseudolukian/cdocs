@@ -27,3 +27,44 @@ struct LogVar : ILogModel {
         );
     }
 };
+
+
+struct LogInlineIf : ILogModel {
+    std::string File;
+    std::string Condition;
+    std::string MET;
+    std::string Line_original;
+    std::string Line_final;
+
+    std::string format_entry(int index) const override {
+        return std::format(
+            "{}. File: {}\n"
+            "   Condition: {{ {} }}\n"
+            "   MET: {}\n"
+            "   Line_original: {}\n\n"
+            "   Line_final: {}\n\n",
+            index, File, Condition, MET, Line_original, Line_final
+        );
+    }
+};
+
+
+struct LogInclude : ILogModel {
+    std::string File;
+    std::string Include_block;
+    std::string Notitle;
+    std::string Anchor;
+    std::string Include_content;
+
+    std::string format_entry(int index) const override {
+        return std::format(
+            "{}. File: {}\n"
+            "   Include_block: {}\n"
+            "       Include options:\n"
+            "           Notitle: {}\n"
+            "           Anchor: {}\n"
+            "   Include_content:\n{}\n\n",
+            index, File, Include_block, Notitle, Anchor, Include_content
+        );
+    }
+};

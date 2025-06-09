@@ -10,12 +10,8 @@ namespace fs = std::filesystem;
 size_t CDOCS_log::global_counter = 0;
 
 void CDOCS_log::log(const std::string& log_group_name, 
-                   const std::vector<std::unique_ptr<ILogModel>>& log_data,
-                   const std::string& log_file_path) {
-    if (log_data.empty()) {
-        //std::cout << "Logging 0 entries to group: " << log_group_name << " (skipped, empty)\n";
-        return;
-    }
+                    const std::vector<std::unique_ptr<ILogModel>>& log_data,
+                    const std::string& log_file_path) {
 
     // Формируем имя файла с текущей датой
     std::time_t now = std::time(nullptr);
@@ -46,15 +42,10 @@ void CDOCS_log::log(const std::string& log_group_name,
             log_file << "[" << log_group_name << "]\n";
         }
 
-        // Записываем каждую запись лога
+        // Записываем каждую запись лога, используя метод format_entry
         for (size_t i = 0; i < log_data.size(); ++i) {
-            const auto& entry = dynamic_cast<const LogVar&>(*log_data[i]);
-            
-            log_file << ++global_counter << ". File: " << entry.File << "\n"
-            << "   Var: {{ " << entry.Var << " }}\n"
-            << "   Value: " << entry.Value << "\n"
-            << "   Line before swap:" << "\n" << "         " << entry.Line_before_swap << "\n\n"
-            << "   Line after swap: " << "\n" << "         " << entry.Line_after_swap << "\n\n";
+            std::string entry_str = log_data[i]->format_entry(++global_counter);
+            log_file << entry_str;
         }
 
         log_file.close();

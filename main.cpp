@@ -52,7 +52,7 @@ int main() {
     auto if_start = high_resolution_clock::now();
 
     for (const auto& [file, content] : buffer.after_vars_preproc) {
-        buffer.after_inline_if_preproc[file] = parser.inline_if(content);
+        buffer.after_inline_if_preproc[file] = parser.inline_if(content, file, conf.log_inline_if, conf.log_path);
     }
     buffer.after_vars_preproc.clear();
     
@@ -68,7 +68,10 @@ int main() {
                                                 cdocs_regex.md_block_include_, 
                                                 cdocs_regex.md_header,
                                                 buffer.after_inline_if_preproc, 
-                                                buffer.includes);
+                                                buffer.includes,
+                                                5,
+                                                conf.log_include,
+                                                conf.log_path);
     }
     
     buffer.after_inline_if_preproc.clear();

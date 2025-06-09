@@ -34,7 +34,7 @@ ydb-cli-install-url=https://install.ydb.tech/cli
 ydb-doc-repo=https://github.com/ydb-platform/ydb/tree/main/ydb/docs
 corporate-paste=https://www.paste.example.com
 corporate-yt=https://www.yt.example.com
-feature_serial: true
+feature_serial=true
 feature_codegen=true
 feature_secondary_index=true
 feature_changefeed=true

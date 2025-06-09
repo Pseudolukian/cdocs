@@ -33,19 +33,21 @@ public:
                                 const std::string& file_name,
                                 bool log_save,
                                 const std::string log_path);
-    vector<string> inline_if(const vector<string>& file_lines);
+    vector<string> inline_if(const vector<string>& file_lines, const std::string& file_name, bool log_save, const std::string log_path);
     bool if_cond_parser(const string& condition);
     vector<string> no_title(vector<string>& blocks);
     vector<string> from_anchor(vector<string>& blocks, string& anchor, std::regex& md_header);
     
     // Preprocessing block
     std::vector<std::string> block_include(const std::vector<std::string>& blocks, 
-                               const std::string& file_name, 
-                               const std::regex& include_regex,
-                               const std::regex& header_regex,
-                               const std::unordered_map<string, std::vector<std::string>>& buffer_content,
-                               std::unordered_map<string, std::vector<std::string>>& buffer_include,
-                               int depth = 0);
+                                const std::string& file_name, 
+                                const std::regex& include_regex,
+                                const std::regex& header_regex,
+                                const std::unordered_map<string, std::vector<std::string>>& buffer_content,
+                                std::unordered_map<string, std::vector<std::string>>& buffer_include,
+                                int depth = 0,
+                                bool log_save = false, 
+                                const std::string log_path = "");
     std::vector<std::string> block_if(const std::vector<std::string>& lines);
 
     // Additions

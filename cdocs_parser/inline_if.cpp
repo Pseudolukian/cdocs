@@ -4,8 +4,12 @@
 using namespace std;
 
 
-vector<string> CDOCS_parser::inline_if(const vector<string>& file_lines) {
+vector<string> CDOCS_parser::inline_if(const vector<string>& file_lines, 
+                                        const std::string& file_name, 
+                                        bool log_save, 
+                                        const std::string log_path) {
     vector<string> result_lines;
+    vector<std::unique_ptr<ILogModel>> log_data;
     const string start_delim = "{% if ";
     const string end_delim = " %}";
     const string endif_delim = "{% endif %}";
@@ -14,6 +18,9 @@ vector<string> CDOCS_parser::inline_if(const vector<string>& file_lines) {
         string line = file_lines[line_idx];
         string new_line;
         size_t pos = 0;
+
+        std::string body_cond;
+        std::string met; 
 
         // Ищем все вхождения {% if ... %} в текущей строке
         while (pos < line.length()) {
@@ -39,6 +46,7 @@ vector<string> CDOCS_parser::inline_if(const vector<string>& file_lines) {
 
             // Извлекаем содержимое условия
             string if_body = line.substr(content_start, end_pos - content_start);
+            body_cond = if_body;
 
             // Находим {% endif %}
             size_t endif_pos = line.find(endif_delim, end_pos + end_delim.length());
@@ -56,7 +64,9 @@ vector<string> CDOCS_parser::inline_if(const vector<string>& file_lines) {
             if (if_cond_parser(if_body)) {
                 // Если условие истинно, добавляем содержимое блока
                 new_line += block_content;
+                met = "true";
             } else {
+                met = "false";
                 // Если условие ложно, ничего не добавляем (блок удаляется)
             }
 
@@ -65,6 +75,20 @@ vector<string> CDOCS_parser::inline_if(const vector<string>& file_lines) {
         }
 
         result_lines.push_back(new_line);
+        
+        if (log_save && !body_cond.empty()) {
+            auto log_entry = std::make_unique<LogInlineIf>();
+            log_entry->File = file_name;
+            log_entry->Condition = body_cond;
+            log_entry->MET = met;
+            log_entry->Line_original = line;
+            log_entry->Line_final = new_line;
+            log_data.push_back(std::move(log_entry));
+        }
+    }
+
+    if (log_save && !log_data.empty()) {
+        CDOCS_log::log("Inline_IF", log_data, log_path);
     }
 
     return result_lines;
