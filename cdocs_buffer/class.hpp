@@ -1,5 +1,3 @@
-
-
 class CDOCS_buffer {
     public:
         std::unordered_map<string, std::vector<std::string>> after_vars_preproc;

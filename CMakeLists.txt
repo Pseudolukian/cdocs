@@ -14,6 +14,7 @@ file(GLOB SOURCES
     cdocs_regex/*.cpp
     cdocs_buffer/*.cpp
     cdocs_log/*.cpp
+    cdocs_threadpool/*.cpp
 )
 
 file(GLOB NOBUILD_FILES 
