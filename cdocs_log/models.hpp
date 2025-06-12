@@ -68,3 +68,25 @@ struct LogInclude : ILogModel {
         );
     }
 };
+
+
+struct LogBlockIf : ILogModel {
+    std::string File;
+    std::string Block_if;
+    std::string Condition;
+    std::string MET;
+    std::string Origin_content;
+    std::string Final_content;
+
+    std::string format_entry(int index) const override {
+        return std::format(
+            "{}. File: {}\n"
+            "   Block if: {}\n"
+            "   Condition: {}\n"
+            "   MET: {}\n"
+            "   Origin content:\n{}\n"
+            "   Final content:\n{}\n\n",
+            index, File, Block_if, Condition, MET, Origin_content, Final_content
+        );
+    }
+};

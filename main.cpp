@@ -85,7 +85,7 @@ int main() {
     cout << "Preprocessing block_if..." << endl;
 
     for (const auto& [file, content] : buffer.after_includes_preproc) {
-        files.save_file(conf.docs_out_path + file, parser.block_if(content));
+        files.save_file(conf.docs_out_path + file, parser.block_if(content, file, conf.log_block_if,conf.log_path));
     }
 
     buffer.after_includes_preproc.clear();

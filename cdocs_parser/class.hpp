@@ -48,7 +48,10 @@ public:
                                 int depth = 0,
                                 bool log_save = false, 
                                 const std::string log_path = "");
-    std::vector<std::string> block_if(const std::vector<std::string>& lines);
+    std::vector<std::string> block_if(const std::vector<std::string>& lines,
+                                                const std::string& file_name,
+                                                bool log_save, 
+                                                const std::string log_path);
 
     // Additions
     static std::vector<std::string> notitle(std::vector<std::string>& lines);
