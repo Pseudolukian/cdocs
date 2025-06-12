@@ -4,7 +4,6 @@
 int main() {
 
     CDOCS_threadpool threadpool = CDOCS_threadpool();
-
     threadpool.thread();
     threadpool.save_md_preproc();
 
