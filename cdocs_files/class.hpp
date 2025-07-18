@@ -24,4 +24,6 @@ public:
     static std::vector<std::string> read_file(const std::string& filename);
     static std::vector<std::string> read_file_ext(const std::string& filename, std::string anchor = "", bool title = true);
     void save_file(const std::string& filename, const std::vector<std::string>& lines);
+    static void create_article (std::filesystem::path& filename);
+    void metadata_add (std::filesystem::path& filename);
 };

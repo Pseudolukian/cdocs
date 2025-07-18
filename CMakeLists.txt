@@ -15,7 +15,10 @@ file(GLOB SOURCES
     cdocs_buffer/*.cpp
     cdocs_log/*.cpp
     cdocs_threadpool/*.cpp
+    cli11/*.cpp
 )
+
+include_directories(${CMAKE_SOURCE_DIR}/cli11)
 
 file(GLOB NOBUILD_FILES 
     "cdocs_files/*_nobuild.cpp" 
